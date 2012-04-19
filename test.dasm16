@@ -1,0 +1,32 @@
+SET [0x8280], 2
+SET PC, white
+
+:black
+JSR wait
+SET X, 0
+
+:loopb
+SET [0x8000+X], 0x020
+ADD X, 1
+IFE X, 0x1A0
+ SET PC, white
+SET PC, loopb
+
+:white
+JSR wait
+SET X, 0
+
+:loopw
+SET [0x8000+X], 0xf20
+ADD X, 1
+IFE X, 0x1A0
+ SET PC, black
+SET PC, loopw
+
+:wait
+SET A, 0
+:loopwa
+ADD A, 1
+IFE A, 0x500
+ set PC, POP
+SET PC, loopwa
