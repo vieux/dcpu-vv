@@ -3,6 +3,8 @@
 
 #define TWEAKCOLOR(c) ( ( ((c) & 1) ^ ((c) & 4) ? ((c)+3)%6 : (c))  )
 
+
+
 void ncurses_init(dcpu_manager *manager)
 {
   initscr(); 
@@ -18,6 +20,7 @@ void ncurses_init(dcpu_manager *manager)
     {
       manager->dcpu_screens[i].wtitle = newwin(TITLE_ROWS, TITLE_COLS, 0, i*TITLE_COLS);
       manager->dcpu_screens[i].wscreen = newwin(SCREEN_ROWS, SCREEN_COLS, TITLE_ROWS, i*TITLE_COLS);
+      nodelay(manager->dcpu_screens[i].wscreen, true);
       manager->dcpu_screens[i].wregisters = newwin(REGISTERS_ROWS, REGISTERS_COLS, TITLE_ROWS, i*TITLE_COLS + SCREEN_COLS);
       
       box(manager->dcpu_screens[i].wscreen, 0, 0); 
@@ -77,10 +80,27 @@ void ncurses_screen(dcpu16 *cpu, WINDOW *wscreen)
   wrefresh(wscreen);
 }
 
+void ncurses_getchar(dcpu16 *cpu, WINDOW *wscreen)
+{
+  static int pp = 0;
+
+  int c = wgetch(wscreen);
+  if (c == ERR)
+    return;
+
+  if (cpu->ram[KEYBOARD_ADDR + pp] != 0)
+    return;
+
+  cpu->ram[KEYBOARD_ADDR + pp] = (char)c;
+  pp = ((pp + 1) & 0xF);
+}
+
 void ncurses_refresh(dcpu_manager *manager)
 {
   while (true)
     {
+      ncurses_getchar(&(manager->dcpus[0]), manager->dcpu_screens[0].wscreen);
+      
       for (int i = 0; i < manager->nb_dcpu; ++i)
 	{
 	  ncurses_screen(&(manager->dcpus[i]), manager->dcpu_screens[i].wscreen);
