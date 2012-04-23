@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -58,6 +59,7 @@ void* dcpu_start(void *arg)
  
   while (handleInstruction(cpu))
     {
+      usleep(100);
     }
   return NULL;
 }

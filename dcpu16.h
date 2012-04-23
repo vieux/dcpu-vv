@@ -21,7 +21,7 @@ typedef struct	dcpu16
   u16 sp;
   u16 o;
   long cycle;
-
+  
   char *program_name;
 }		dcpu16;
 
