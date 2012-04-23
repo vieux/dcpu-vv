@@ -6,8 +6,8 @@ dcpu-vv is a dcpu-16 emulator *written in C*
 
 You can found dcpu-16 full specs on [0x10c.com](http://0x10c.com/doc/dcpu-16.txt "http://0x10c.com/doc/dcpu-16.txt")
 
-One of the particularity of dcpu-vv is to have on old-scool look
-as it uses *ncurses* to render the screen.
+One of the particularity of dcpu-vv is the capacity to emulate multiple dcpu16 at the same time, using *ncurses* to render the screens
+
 
 SCREENSHOTS
 ===========
@@ -23,11 +23,10 @@ DONE
 ----
 
 ### Specifications
-
 0x10c.com v1.1 specifications compliant
 It supports both hex and binary files
 
-### Outuput
+### Output
 basic output rendering (no blink, no highlight)
 border at 0x8280
 

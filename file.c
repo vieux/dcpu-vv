@@ -7,7 +7,7 @@
 
 bool loadBinaryFile(dcpu16 *cpu, FILE *fp)
 {
-  fread(cpu->ram, 1, 0x10000, fp);
+  fread(cpu->ram, sizeof(u16), RAM_SIZE, fp);
   fclose(fp);
   return true;
 }

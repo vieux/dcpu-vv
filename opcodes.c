@@ -22,7 +22,8 @@ inline u8 opcode_pc_cost(u16 code)
       return 0;
     }
 }
-u16* access_opcode(dcpu16 *cpu, u16 code, char c)
+
+u16* access_opcode(dcpu16 *cpu, u16 code)
 {
   switch (code)
     {

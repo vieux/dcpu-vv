@@ -8,15 +8,14 @@ typedef unsigned int u32;
 typedef unsigned short u16;
 typedef unsigned char u8;
 
-#define VIDEO_ADDR 0x8000
-#define KEYBOARD_ADDR 0x9000
+#define RAM_SIZE 0x10000
 
 extern char registers[8];
 
 typedef struct	dcpu16 
 {
   u16 unused;
-  u16 ram[0x10000];
+  u16 ram[RAM_SIZE];
   u16 r[8];
   u16 pc;
   u16 sp;
@@ -24,11 +23,6 @@ typedef struct	dcpu16
   long cycle;
 
   char *program_name;
-  struct	display
-  {
-    void (*init)();
-    void (*refresh)(struct dcpu16 *cpu);
-  }		display;
 }		dcpu16;
 
 typedef union instruction
@@ -53,7 +47,7 @@ typedef struct	opcode_infos
 void error(char *str, dcpu16 *cpu);
 
 /* opcodes.c */
-u16* access_opcode(dcpu16 *cpu, u16 code, char c);
+u16* access_opcode(dcpu16 *cpu, u16 code);
 u8 opcode_pc_cost(u16 code);
 
 /* operations.c */
@@ -63,11 +57,7 @@ bool extended_operation(dcpu16 *cpu, u16 code , u16 a);
 /* file.c */
 bool loadFile(dcpu16 *cpu);
 
-
-void init_console();
-void refresh_console(dcpu16 *cpu);
-
-void init_ncurses();
-void refresh_ncurses(dcpu16 *cpu);
+/* dcpu16.c */
+void * dcpu_start(void *arg);
 
 #endif

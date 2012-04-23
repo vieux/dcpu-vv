@@ -1,11 +1,11 @@
-
+CC := gcc
 CFLAGS := -Wall -g -std=c99 -fms-extensions
-LDFLAGS := -lcurses
+LDFLAGS := -lcurses -lpthread
 OUT_NAME := dcpu-vv
 
 all: $(OUT_NAME)
 
-DCPU_OBJS := dcpu16.o opcodes.o file.o operations.o error.o display_console.o display_ncurses.o debug.o registers.o
+DCPU_OBJS := dcpu16.o opcodes.o file.o operations.o error.o display.o debug.o registers.o dcpu_manager.o
 $(OUT_NAME): $(DCPU_OBJS)
 	$(CC) $(LDFLAGS) -o $(OUT_NAME) $(DCPU_OBJS)
 
