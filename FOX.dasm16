@@ -1,0 +1,419 @@
+;Fox HUD 018
+;Coded by Kixu
+
+:boot
+             set j,bootMsg
+             set i,0x8000
+:bootPrint   set [i],[j]
+             bor [i],0x8000
+             add j,1
+             add i,1
+             ifn [j],0
+               set pc,bootPrint
+:bootCls     set [i],0
+             add i,1
+             ifn i,0x8180
+               set pc,bootCls
+             
+set sp,0xffff
+set a,0
+set b,0
+set c,0x9000
+set x,0
+set y,0
+set z,0
+set i,0
+set j,0
+       
+jsr clearLog
+
+set [printColor],[green]
+set [readerP],greetingMsg1
+jsr print
+jsr carriageReturn
+jsr carriageReturn
+
+set [printcolor],[grey]
+set [readerP],greetingMsg2
+jsr print
+jsr carriageReturn
+jsr carriageReturn
+
+set [readerP],greetingMsg3
+jsr print
+jsr carriageReturn
+jsr CarriageReturn
+
+jsr renderLog
+set pc,mainLoop
+
+:logScroll      dat 0x600
+:prevWordP      dat 0x7880
+:commandOpen    dat 0
+:commandP       dat 0x7830
+:commandOffset  dat 0
+:barT           dat 0
+:logOffset      dat 0x8000
+:readerP        dat 0
+:printerP       dat 0
+:keyHit         dat 0,0
+:printColor     dat 0x8000
+
+
+:enter          dat 0xa
+:space          dat 0x20
+:arrowUp        dat 0x26
+:arrowDown      dat 0x28
+
+
+:green dat 0x2000
+:red dat 0x4000
+:grey dat 0x8000
+:gray dat 0x8000
+:white dat 0xf000
+:chatGrey dat 0x7000
+:chatGray dat 0x7000
+:chatRed dat 0xc000
+:chatGreen dat 0xa000
+:cyan dat 0x9000
+:yellow dat 0xe000
+:commandColor dat 0xf100
+:blue dat 0x9000
+
+:bootMsg      dat "Booting Fox HUD 018...",0
+:greetingMsg1 dat "Finished booting Fox HUD 018.",0
+:greetingMsg2 dat "[ARROWS] to scroll, [ENTER] to bring up Command Line, '/list commands' for a list of available commands.",0
+:greetingMsg3 dat "You're now viewing the Log.",0
+:printErrMsg  dat "Print Error: expected string at readerP, found 0x0 instead.",0
+:testString   dat "This is a test.",0
+:selfComm     dat "You: ",0
+
+:prompt       dat 0xf13e
+:cursor        dat 0xf15f
+
+:resetInput   set [c],0
+              add c,1
+              ifg c,0x900f
+                set c,0x9000
+:mainLoop     ife [c],0
+                set pc,mainLoop
+              set push,resetInput
+              ife [c],[enter]
+                set pc,toggleCommand
+              ife [c],[arrowDown]
+                set pc, scrollDown
+              ife [c],[arrowUp]
+                set pc, scrollUp
+              ife [commandOpen],32
+                set pc,typeCommand
+              set pc,pop
+
+:print         set push,j
+               set j,[readerP]
+               ifn [j],0
+                 set pc,beginPrint
+               set j,pop
+               set [readerP],printErrMsg
+               set push,[printcolor]
+               set [printColor],[red]
+               jsr print
+               set [printcolor],pop
+               set pc,pop
+               
+:beginPrint    set push,i
+               set i,[printerP]
+               set push,a
+               set push,b
+               set b,[prevWordP]
+:printNextChar
+               set a,i
+               mod a,32
+               ife a,0
+                 set pc,printNewLine
+:PNLEnd        set [i],[j]
+               ife [j],[space]
+                 set b,i
+               bor [i],[printColor]
+               add i,1
+:PNLSpace      add j,1
+               ifn [j],0
+                 set pc, printNextChar
+               set [prevwordP],b
+               set b,pop
+               set a,pop
+               set [printerP],i
+               set [readerP],j
+               set i,pop
+               set j,pop
+               set pc,pop
+
+:printNewLine
+               ife i,[logOffset]
+                  jsr Roll
+               ife [j],[space]
+                 set pc,PNLSpace
+               add b,1
+               ife b,i
+                 set pc,noautoreturn
+               set a,i
+               sub a,b
+               ifg a,16
+                 set pc,noAutoReturn
+               set a,i
+               ifg i,0x7fff
+                 sub i,0x780
+:ARNextChar    set [i],[b]
+               set [b],0
+               add i,1
+               add b,1
+               ifn b,a
+                 set pc,ARNextChar
+               set pc,PNLEnd
+:noAutoReturn  ifg i,0x7fff
+                 sub i,0x780
+               set pc,PNLend
+
+:Roll            add [logOffset],32
+                 ifg [logOffset],0x8000
+                   sub [logOffset],0x780
+                 set push,a
+                 set a,[logOffset]
+                 sub a,32
+:rollNextChar    set [a],0
+                 add a,1
+                 ifn a,[logOffset]
+                   set pc,rollNextChar
+                 set a,pop
+                 set pc,pop
+
+:carriageReturn    set push,a
+                 ife [printerP],[logOffset]
+                   jsr Roll
+                 ifg [printerP],0x7fff
+                   sub [printerP],0x780
+:CRNextChar      add [printerP],1
+                 set a,[printerP]
+                 sub a,0x7880
+                 mod a,32
+                 ifn a,0
+                   set pc,CRNextChar
+                 set [prevWordP],[printerP]
+                 set a,pop
+                 set pc,pop
+
+:scrollDown      add [logScroll],96
+                 ifg [logscroll],0x600
+                   set [logscroll],0x600
+                 jsr renderLog
+                 set pc,pop
+
+:scrollUp        sub [logScroll],96
+                 ifg [logscroll],0x600
+                   set [logscroll],0
+                 jsr renderLog
+                 set pc,pop
+
+:renderLog        set push,a
+                 set push,b
+                 set b,sp
+                 set sp,0x8000
+                 add sp,[commandOpen]
+                 set a,[logOffset]
+                 add a,[logScroll]
+                 add a,[commandOpen]
+
+
+:RLNextChar      ifg a,0x7fff
+                   sub a,0x780
+                 set pop,[a]
+                 add a,1
+                 ifn sp,0x8180
+                   set pc,RLNextChar
+                 set sp,b
+                 set b,pop
+                 set a,pop
+                 set pc,pop
+
+:clearLog      set push,a
+                 set a,sp
+                 set sp,0x7880
+:clearNextChar   set pop,0
+                 ifn sp,0x8000
+                   set pc,clearNextChar
+                 set [printerP],0x8000
+                 set [logScroll],0x600
+                 set [logOffset],0x8000
+                 set sp,a
+                 set a,pop
+                 set pc,pop
+
+:toggleCommand     Ifn [commandOpen],0
+                     set pc,closeCommand
+                   set [commandOpen],32
+                   set push, b
+                   set b,sp
+                   set sp,0x8000
+                   set pop,[prompt]
+                   set pop,[cursor]
+:CMDOpenNextChar   set pop,0x0120
+                   ifn sp,0x8020
+                     set pc,CMDOpenNextChar
+                   set sp,b
+                   set b,pop
+                   set pc,pop
+:closeCommand      set [commandOpen],0
+                   set push,a
+                   set a,[logOffset]
+                   add a,[logScroll]
+                   ifg a,0x7fff
+                     sub a,0x780
+                   set push,b
+                   set b,sp
+                   set sp,0x8000
+:CMDCloseNextChar  set pop,[a]
+                   add a,1
+                   ifn sp,0x8020
+                     set pc,CMDCloseNextChar
+                   set sp,b
+                   jsr interpretCommand  
+                   set a,0x7830
+:wipeInputNextChar set [a],0
+                   add a,1
+                   ifn [a],0
+                     set pc,wipeInputNextChar
+                   set [commandP],0x7830
+                   set b,pop
+                   set a,pop
+                   set pc,pop
+
+:interpretCommand  ife [0x7830],0
+                     set pc,pop
+                   jsr carriageReturn
+                   set [printColor],[white]
+                   set [readerP],selfComm
+                   jsr print
+                   set [printColor],[chatGrey]
+                   set [readerP],0x7830
+                   jsr print
+                   jsr carriageReturn
+                   jsr renderLog
+                   set pc,pop
+
+:typeCommand       ifn [c], 0x25
+                     set pc,TCnotLeft
+                   ife [commandP],0x7830
+                     set pc,pop
+                   sub [commandP],1
+                   jsr renderCommand
+                   set pc,pop
+                   
+:TCnotLeft         ifn [c],0x8
+                     set pc,TCnotBS
+                   ife [commandP],0x7830
+                     set pc,pop
+                   set push,a
+                   set a,[commandP]
+                   ifn [a],0
+                     set pc, BSdisplaceCommand
+                   sub a,1
+                   set [a],0
+                   set [commandP],a
+                   set a,pop
+                   jsr renderCommand
+                   set pc,pop
+
+:BSdisplaceCommand set push, b
+                   set b,a
+                   sub b,1
+:BSDCNextChar      set [b],[a]
+                   add a,1
+                   add b,1
+                   ifn [a],0
+                     set pc,BSDCNextChar
+                   set [b],0
+                   sub [commandP],1
+                   set b,pop
+                   set a,pop
+                   jsr renderCommand
+                   set pc,pop
+
+:TCnotBS           ifn [c],0x27
+                     set pc,TCnotRight
+                   ife [commandP],0x7870
+                     set pc,pop
+                   set push,a
+                   set a,[commandP]
+                   ife [a],0
+                     set pc,TCendRight
+                   add [commandP],1
+                   jsr renderCommand
+:TCendRight        set a,pop
+                   set pc,pop
+
+:TCnotRight        ife [commandP],0x7870
+                     set pc,pop
+                   set push,a
+                   set a,[commandP]
+                   ifn [a],0
+                     jsr displaceCommand
+                   set [a],[c]
+                   add [commandP],1
+                   jsr renderCommand
+                   set a,pop
+                   set pc,pop
+
+:displaceCommand   ifn [0x786f],0
+                     set pc,endDisplaceCommand
+                   set push,b
+                   set push,c
+                   set b,0x7870
+                   set c,0x786f
+:DCnextChar        sub b,1
+                   sub c,1
+                   set [b],[c]
+                   ifn c,a
+                     set pc,DCnextChar
+                   set c,pop
+                   set b,pop
+                   set pc,pop
+:endDisplaceCommand    set a,pop
+                       set a,pop
+                       set pc,pop
+
+:renderCommand     set push,a
+                   set a,0x7830
+                   add a,[commandOffset]
+                   set push,b
+                   set b,0x8001
+:RCCursorNextChar  ife a,[commandP]
+                     set pc,RCommandCursor
+                   set [b],[a]
+                   bor [b],[commandColor]
+                   add a,1
+                   add b,1
+                   ifn b,0x8020
+                     set pc,RCCursorNextChar
+                   set b,pop
+                   set a,pop
+                   set pc,pop
+:RCommandCursor    set [b],[cursor]
+                   add b,1
+:RCommandNextChar  ife b,0x8020
+                     set pc,endRenderCommand
+                   ife [a],0
+                     set pc,renderCommandSpace
+                   set [b],[a]
+                   bor [b],[commandColor]
+                   add a,1
+                   add b,1
+                   set pc,RCommandNextChar
+:endRenderCommand  set b,pop
+                   set a,pop
+                   set pc,pop
+:renderCommandSpace set [b],0xf120
+                   add b,1
+                   ifg 0x8020,b
+                     set pc,endRenderCommand
+                   set b,pop
+                   set a,pop
+                   set pc,pop
