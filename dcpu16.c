@@ -29,25 +29,6 @@ bool handleInstruction(dcpu16 *cpu)
   return true;
 }
 
-/*
-void opts(dcpu16 *cpu, int ac, char **av)
-{
-  cpu->display.init = init_ncurses;
-  //  cpu->display.refresh = refresh_ncurses;
-  
-  for (int i = 1; i < ac; ++i)
-    {
-      if (strcmp(av[i], "--noscreen") == 0)
-	{
-	  cpu->display.init = init_console;
-	  //  cpu->display.refresh = refresh_console;
-	}
-      else
-	cpu->program_name = av[i];
-    }
-    }
-*/
-
 void* dcpu_start(void *arg)
 {
   dcpu16 *cpu = arg;

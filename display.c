@@ -1,8 +1,18 @@
 #include "dcpu_manager.h"
 #include "display.h"
 
-#define TWEAKCOLOR(c) ( ( ((c) & 1) ^ ((c) & 4) ? ((c)+3)%6 : (c))  )
 
+int to_ncurses_color(int c)
+{
+  switch(c)
+    {
+    case 1: return 4;
+    case 3: return 6;
+    case 4: return 1;
+    case 6: return 3;
+    default: return c;
+    }
+}
 
 
 void ncurses_init(dcpu_manager *manager)
@@ -53,7 +63,7 @@ void ncurses_screen(dcpu16 *cpu, WINDOW *wscreen)
   dcpu_character *c;
   short pairIndex;
 
-  pairIndex = TWEAKCOLOR(*(cpu->ram + SCREEN_BORDER_ADDR) & 7);
+  pairIndex = to_ncurses_color(*(cpu->ram + SCREEN_BORDER_ADDR) & 7);
   init_pair(pairIndex, 0, pairIndex);
   chtype border = ' ' | COLOR_PAIR(pairIndex);
 
@@ -65,15 +75,18 @@ void ncurses_screen(dcpu16 *cpu, WINDOW *wscreen)
 	      mvwaddch(wscreen, y+2, x+2, border);
 	  else
 	    {
+	      
 	      c = (dcpu_character*) cpu->ram + VIDEO_ADDR + x + y*0x20;
-	      pairIndex = TWEAKCOLOR(c->text_color & 0x7)+ TWEAKCOLOR(c->background_color & 0x7);
-	      init_pair(pairIndex, TWEAKCOLOR(c->text_color & 0x7), TWEAKCOLOR(c->background_color & 0x7));
+	      pairIndex = (c->text_color << 3) | c->background_color;
+	      init_pair(pairIndex, to_ncurses_color(c->text_color), to_ncurses_color(c->background_color));
 	      if (c->character == 0)
 		mvwaddch(wscreen, y+2, x+2, ' ');
 	      else if (c->blink)
 		mvwaddch(wscreen, y+2, x+2, c->character | A_BLINK);
 	      else
 		mvwaddch(wscreen, y+2, x+2, c->character | COLOR_PAIR(pairIndex));
+	      //	      wrefresh(wscreen);
+	      //return;
 	    }
 	}
     }

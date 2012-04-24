@@ -36,8 +36,10 @@ typedef union	dcpu_character
   {
     u16		character : 7;
     u16		blink : 1;
-    u16		background_color : 4;
-    u16		text_color : 4;
+    u16		background_color : 3;
+    u16		background_highlight : 1;
+    u16		text_color : 3;
+   u16		text_highlight : 1;
   };
 }		dcpu_character;
 

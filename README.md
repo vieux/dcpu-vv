@@ -12,6 +12,7 @@ One of the particularity of dcpu-vv is the capacity to emulate multiple dcpu16 a
 SCREENSHOTS
 ===========
 
+![ENvOS & Color Test](https://raw.github.com/vieux/dcpu-vv/master/screenshots/EnvOS_color.png "dcpu-vv running ENvOS & color test at the same time")
 ![Matrix test](https://raw.github.com/vieux/dcpu-vv/master/screenshots/matrix.png "dcpu-vv running a matrix test")
 ![Color Test](https://raw.github.com/vieux/dcpu-vv/master/screenshots/color_test.png "dcpu-vv running a color test")
 
