@@ -1,1 +1,3 @@
+install: ncurses-dev
 language: c
+script: make
