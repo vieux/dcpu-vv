@@ -1,4 +1,6 @@
+#define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 
 #include "dcpu16.h"
