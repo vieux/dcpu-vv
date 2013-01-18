@@ -1,3 +1,3 @@
-install: apt-get install ncurses-dev
+before_install: sudo apt-get install ncurses-dev
 language: c
 script: make
